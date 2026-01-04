@@ -9,31 +9,63 @@
 
 <body>
   <div class="container">
-    <h1>Rocket League Mechanics Tracker</h1>
-    <p class="sub">Rate each mechanic (0–5). Your ratings save automatically.</p>
+    <header class="top">
+      <div>
+        <h1>Rocket League Mechanics Tracker</h1>
+        <p class="sub">Rate each mechanic (0–5). Autosaves. Generates a 7-day plan + AI tips.</p>
+      </div>
 
-    <div id="list"></div>
+      <div class="preset">
+        <label for="rankPreset">Preset</label>
+        <select id="rankPreset">
+          <option value="custom">Custom</option>
+          <option value="bronze">Bronze</option>
+          <option value="silver">Silver</option>
+          <option value="gold">Gold</option>
+          <option value="plat">Platinum</option>
+          <option value="diamond">Diamond</option>
+          <option value="champ">Champion</option>
+          <option value="gc">Grand Champ</option>
+          <option value="ssl">SSL</option>
+        </select>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2 class="sectionTitle">Mechanics</h2>
+      <div id="list"></div>
+    </div>
 
     <div class="actions">
       <button class="btn" id="generate">Generate Plan</button>
       <button class="btn2" id="reset">Reset</button>
+      <button class="btn2" id="share">Share Link</button>
+      <button class="btn2" id="download">Download Plan</button>
     </div>
 
     <div class="card" id="results" style="display:none;">
       <h2>Your Focus</h2>
       <div id="weaknesses" class="small"></div>
 
+      <h3>AI Coach</h3>
+      <div id="coach" class="coach"></div>
+
       <h3>7-Day Plan</h3>
       <pre id="plan"></pre>
 
-      <button class="btn2" id="copy">Copy Plan</button>
-      <span id="copied" class="small"></span>
+      <div class="actions">
+        <button class="btn2" id="copy">Copy Plan</button>
+        <span id="copied" class="small"></span>
+      </div>
     </div>
+
+    <footer class="footer">
+      Tip: After you edit code, refresh your GitHub Pages site with <strong>Ctrl + F5</strong>.
+    </footer>
   </div>
 
 <script>
 window.addEventListener("DOMContentLoaded", () => {
-
   const mechanics = [
     "Shooting accuracy",
     "Power shots",
@@ -64,11 +96,108 @@ window.addEventListener("DOMContentLoaded", () => {
     "Boost management": "Focus on small pads and smart boosts (3 games)."
   };
 
+  // Rank presets (defaults). You can tweak these later.
+  const presets = {
+    bronze:   { base: 1 },
+    silver:   { base: 2 },
+    gold:     { base: 2, "Shooting accuracy": 3, "Boost management": 3 },
+    plat:     { base: 3, "Fast aerial": 2, "Air roll control": 2 },
+    diamond:  { base: 3, "Backboard defense": 3, "Recoveries (landing / wavedash)": 3 },
+    champ:    { base: 4, "Air roll control": 3, "Wall reads": 4, "Backboard defense": 4 },
+    gc:       { base: 4, "Air roll control": 4, "First touch (ground control)": 4, "Boost management": 4 },
+    ssl:      { base: 5, "Air roll control": 5, "First touch (ground control)": 5, "Wall reads": 5, "Backboard defense": 5 }
+  };
+
+  // AI coaching tips per mechanic
+  const coaching = {
+    "Shooting accuracy": [
+      "Aim small: pick one corner per shot (don’t just hit net).",
+      "Shoot faster: one touch setup → shot. No extra touches.",
+      "Track misses: if you miss wide, slow down and focus placement."
+    ],
+    "Power shots": [
+      "Hit through the center of the ball with forward momentum.",
+      "Practice bounce shots (ball bounces once → you strike it).",
+      "Focus on clean contact, not speed of approach."
+    ],
+    "First touch (ground control)": [
+      "Your first touch should have a purpose: catch, push, or pass.",
+      "Try feathering throttle to keep the ball close after contact.",
+      "Don’t boom it unless you’re clearing."
+    ],
+    "Dribbling": [
+      "Keep the ball on the hood and adjust with tiny steering.",
+      "Use small boosts, not full boost, to keep control.",
+      "If you lose it, reset and go slower for 2 minutes."
+    ],
+    "Flicks": [
+      "Start with simple front flicks before fancy ones.",
+      "Practice timing: jump + flip right when the ball is stable.",
+      "If it pops weak, you’re flipping too early."
+    ],
+    "Fast aerial": [
+      "Jump → boost → jump quickly (don’t wait).",
+      "Keep the nose slightly up, not straight vertical.",
+      "Stop boosting once you’ve reached the ball (save boost)."
+    ],
+    "Air roll control": [
+      "Pick one direction (air roll left OR right) and commit.",
+      "Do short air roll bursts, not constant spinning at first.",
+      "Practice controlled landing after aerial touches."
+    ],
+    "Wall reads": [
+      "Read the bounce: wait half a second before jumping.",
+      "Approach parallel to the wall for smoother touches.",
+      "Prioritize a safe clear before trying a shot."
+    ],
+    "Backboard defense": [
+      "Rotate back post and face the play before jumping.",
+      "Your job is clear first, then control if you have time.",
+      "Don’t double jump early—wait for the ball path."
+    ],
+    "Recoveries (landing / wavedash)": [
+      "Land with wheels down and hold powerslide briefly.",
+      "Practice half flips into wavedashes to regain speed.",
+      "Don’t flip when you should be landing clean."
+    ],
+    "Half-flip": [
+      "Focus on consistent inputs over speed.",
+      "Use it to rotate faster when you’re facing wrong way.",
+      "Don’t half-flip if a simple turn is safer."
+    ],
+    "Boost management": [
+      "Stop chasing 100s—use small pads and stay in the play.",
+      "Use boost in short bursts, not full holds.",
+      "If you’re low, rotate out early instead of forcing plays."
+    ]
+  };
+
   const listDiv = document.getElementById("list");
   const resultsDiv = document.getElementById("results");
   const weaknessesDiv = document.getElementById("weaknesses");
+  const coachDiv = document.getElementById("coach");
   const planPre = document.getElementById("plan");
   const copiedSpan = document.getElementById("copied");
+  const presetSelect = document.getElementById("rankPreset");
+
+  const STORAGE_KEY_PREFIX = "rl_tracker_";
+
+  const idFor = (name) => `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
+
+  function setRating(name, value, { save=true } = {}) {
+    const id = idFor(name);
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = String(value);
+    if (save) localStorage.setItem(STORAGE_KEY_PREFIX + id, String(value));
+  }
+
+  function getRating(name) {
+    const id = idFor(name);
+    const el = document.getElementById(id);
+    if (!el) return 0;
+    return Number(el.value);
+  }
 
   function makeRow(name) {
     const row = document.createElement("div");
@@ -78,7 +207,7 @@ window.addEventListener("DOMContentLoaded", () => {
     label.textContent = name;
 
     const select = document.createElement("select");
-    select.id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
+    select.id = idFor(name);
 
     for (let i = 0; i <= 5; i++) {
       const opt = document.createElement("option");
@@ -87,74 +216,198 @@ window.addEventListener("DOMContentLoaded", () => {
       select.appendChild(opt);
     }
 
-    // load saved value
-    const saved = localStorage.getItem(select.id);
-    select.value = saved !== null ? saved : 2;
+    // load saved (or default 2)
+    const saved = localStorage.getItem(STORAGE_KEY_PREFIX + select.id);
+    select.value = saved !== null ? saved : "2";
 
-    // save on change
     select.addEventListener("change", () => {
-      localStorage.setItem(select.id, select.value);
+      localStorage.setItem(STORAGE_KEY_PREFIX + select.id, select.value);
+      presetSelect.value = "custom";
+      localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
     });
 
     row.append(label, select);
     return row;
   }
 
-  // build UI
+  // Build UI list
   listDiv.innerHTML = "";
   mechanics.forEach(m => listDiv.appendChild(makeRow(m)));
 
   function getScores() {
-    return mechanics.map(name => {
-      const id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
-      const el = document.getElementById(id);
-      return { name, val: Number(el.value) };
-    });
+    return mechanics.map(name => ({ name, val: getRating(name) }));
   }
 
-  function buildPlan(weak) {
+  function topWeaknesses(scores, count=3) {
+    const sorted = [...scores].sort((a,b) => a.val - b.val);
+    return sorted.slice(0, count);
+  }
+
+  function buildCoachText(weak3) {
+    // Build a short “AI coach” section
+    let out = "";
+    weak3.forEach((w, idx) => {
+      const tips = coaching[w.name] || ["Practice 10–15 minutes focused reps.", "Play 2–3 games focusing on this.", "Review 1 replay mistake."];
+      out += `${idx+1}) ${w.name} (${w.val}/5)\n`;
+      out += `   • ${tips[0]}\n`;
+      out += `   • ${tips[1]}\n`;
+      out += `   • ${tips[2]}\n\n`;
+    });
+    out += "Quick rule: focus on ONE weakness per match. Don’t try to fix everything at once.\n";
+    return out.trim();
+  }
+
+  function buildPlan(weak3) {
+    const [a,b,c] = weak3.map(x => x.name);
+    const days = [
+      { day: "Day 1", focus: a },
+      { day: "Day 2", focus: b },
+      { day: "Day 3", focus: a },
+      { day: "Day 4", focus: c },
+      { day: "Day 5", focus: b },
+      { day: "Day 6", focus: c },
+      { day: "Day 7", focus: "Replay review + freeplay" },
+    ];
+
     let text = "";
-    weak.forEach((w, i) => {
-      text += `Day ${i + 1}: ${w.name}\n`;
-      text += `  - ${drillTips[w.name]}\n`;
-      text += `  - Play 2–3 games focusing only on this skill.\n\n`;
-    });
-    text += "Day 7: Replay review (10 min) + freeplay (10 min)\n";
-    return text;
+    for (const d of days) {
+      if (d.focus === "Replay review + freeplay") {
+        text += `${d.day}: Replay review (10 min) — pick 1 mistake to fix. Then freeplay (10 min).\n`;
+      } else {
+        text += `${d.day}: ${d.focus}\n`;
+        text += `  - ${drillTips[d.focus] || "10–15 minutes focused practice."}\n`;
+        text += `  - Then play 2–3 games focusing ONLY on ${d.focus}.\n\n`;
+      }
+    }
+    text += `\nTop 3 weaknesses: ${a}, ${b}, ${c}\n`;
+    return text.trim();
   }
 
+  // Share link encoding/decoding
+  function encodeRatings() {
+    const data = {};
+    mechanics.forEach(name => data[idFor(name)] = getRating(name));
+    const json = JSON.stringify(data);
+    return encodeURIComponent(btoa(json));
+  }
+
+  function decodeRatings(encoded) {
+    try {
+      const json = atob(decodeURIComponent(encoded));
+      const data = JSON.parse(json);
+      Object.keys(data).forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.value = String(data[id]);
+          localStorage.setItem(STORAGE_KEY_PREFIX + id, String(data[id]));
+        }
+      });
+      presetSelect.value = "custom";
+      localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  // Load from share link if present
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("r")) {
+    decodeRatings(params.get("r"));
+  }
+
+  // Load saved preset
+  const savedPreset = localStorage.getItem(STORAGE_KEY_PREFIX + "preset");
+  if (savedPreset && presetSelect.querySelector(`option[value="${savedPreset}"]`)) {
+    presetSelect.value = savedPreset;
+  }
+
+  function applyPreset(key) {
+    const preset = presets[key];
+    if (!preset) return;
+
+    const base = preset.base ?? 2;
+    mechanics.forEach(name => {
+      const val = preset[name] ?? base;
+      setRating(name, val, { save: true });
+    });
+
+    presetSelect.value = key;
+    localStorage.setItem(STORAGE_KEY_PREFIX + "preset", key);
+  }
+
+  presetSelect.addEventListener("change", () => {
+    const val = presetSelect.value;
+    if (val === "custom") {
+      localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
+      return;
+    }
+    applyPreset(val);
+  });
+
+  // Buttons
   document.getElementById("generate").onclick = () => {
-    const scores = getScores().sort((a, b) => a.val - b.val);
-    const weak = scores.slice(0, 3);
+    const scores = getScores();
+    const weak3 = topWeaknesses(scores, 3);
 
     weaknessesDiv.textContent =
-      weak.map(w => `${w.name} (${w.val}/5)`).join(" • ");
+      `Focus on: ${weak3.map(w => `${w.name} (${w.val}/5)`).join(" • ")}`;
 
-    planPre.textContent = buildPlan(weak);
+    coachDiv.textContent = buildCoachText(weak3);
+    planPre.textContent = buildPlan(weak3);
+
     resultsDiv.style.display = "block";
     copiedSpan.textContent = "";
   };
 
   document.getElementById("reset").onclick = () => {
-    mechanics.forEach(name => {
-      const id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
-      const el = document.getElementById(id);
-      el.value = 2;
-      localStorage.setItem(id, "2");
-    });
+    mechanics.forEach(name => setRating(name, 2, { save: true }));
+    presetSelect.value = "custom";
+    localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
+
     resultsDiv.style.display = "none";
     copiedSpan.textContent = "";
+    coachDiv.textContent = "";
+    planPre.textContent = "";
   };
 
   document.getElementById("copy").onclick = async () => {
+    const text = planPre.textContent || "";
     try {
-      await navigator.clipboard.writeText(planPre.textContent);
+      await navigator.clipboard.writeText(text);
       copiedSpan.textContent = "Copied!";
     } catch {
-      copiedSpan.textContent = "Copy failed — select and copy.";
+      copiedSpan.textContent = "Copy failed — select text and copy.";
     }
   };
 
+  document.getElementById("download").onclick = () => {
+    const content = planPre.textContent || "Generate a plan first.";
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "rl-7-day-plan.txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+  };
+
+  document.getElementById("share").onclick = async () => {
+    const r = encodeRatings();
+    const shareUrl = `${window.location.origin}${window.location.pathname}?r=${r}`;
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      copiedSpan.textContent = "Share link copied!";
+    } catch {
+      copiedSpan.textContent = "Couldn’t copy — here it is in the address bar.";
+      window.history.replaceState(null, "", shareUrl);
+    }
+  };
 });
 </script>
 </body>
