@@ -30,113 +30,128 @@
       <span id="copied" class="small"></span>
     </div>
   </div>
-
 <script>
-const mechanics = [
-  "Shooting accuracy",
-  "Power shots",
-  "First touch (ground control)",
-  "Dribbling",
-  "Flicks",
-  "Fast aerial",
-  "Air roll control",
-  "Wall reads",
-  "Backboard defense",
-  "Recoveries (landing / wavedash)",
-  "Half-flip",
-  "Boost management"
-];
+window.addEventListener("DOMContentLoaded", () => {
+  const mechanics = [
+    "Shooting accuracy",
+    "Power shots",
+    "First touch (ground control)",
+    "Dribbling",
+    "Flicks",
+    "Fast aerial",
+    "Air roll control",
+    "Wall reads",
+    "Backboard defense",
+    "Recoveries (landing / wavedash)",
+    "Half-flip",
+    "Boost management"
+  ];
 
-const drillTips = {
-  "Shooting accuracy": "Freeplay: shoot corners and on-target shots (10 min).",
-  "Power shots": "Training: power clears and boom touches (10 min).",
-  "First touch (ground control)": "Freeplay: soft first touches into control (10 min).",
-  "Dribbling": "Freeplay: carry the ball without losing it (10 min).",
-  "Flicks": "Practice 10 clean flicks (10 min).",
-  "Fast aerial": "Fast aerials to crossbar and ceiling touches (10 min).",
-  "Air roll control": "Air roll control drills or rings map (10–15 min).",
-  "Wall reads": "Wall bounces and reads into clears or shots (10 min).",
-  "Backboard defense": "Backboard clears and controlled touches (10 min).",
-  "Recoveries (landing / wavedash)": "Quick recoveries and wavedashes (10 min).",
-  "Half-flip": "Practice 20 clean half-flips (5–10 min).",
-  "Boost management": "Focus on small pads and smart boosts (3 games)."
-};
+  const drillTips = {
+    "Shooting accuracy": "Freeplay: shoot corners and on-target shots (10 min).",
+    "Power shots": "Training: power clears and boom touches (10 min).",
+    "First touch (ground control)": "Freeplay: soft first touches into control (10 min).",
+    "Dribbling": "Freeplay: carry the ball without losing it (10 min).",
+    "Flicks": "Practice 10 clean flicks (10 min).",
+    "Fast aerial": "Fast aerials to crossbar and ceiling touches (10 min).",
+    "Air roll control": "Air roll control drills or rings map (10–15 min).",
+    "Wall reads": "Wall bounces and reads into clears or shots (10 min).",
+    "Backboard defense": "Backboard clears and controlled touches (10 min).",
+    "Recoveries (landing / wavedash)": "Quick recoveries and wavedashes (10 min).",
+    "Half-flip": "Practice 20 clean half-flips (5–10 min).",
+    "Boost management": "Focus on small pads and smart boosts (3 games)."
+  };
 
-const listDiv = document.getElementById("list");
+  const listDiv = document.getElementById("list");
+  const resultsDiv = document.getElementById("results");
+  const weaknessesDiv = document.getElementById("weaknesses");
+  const planPre = document.getElementById("plan");
+  const copiedSpan = document.getElementById("copied");
 
-function makeRow(name) {
-  const row = document.createElement("div");
-  row.className = "row";
-
-  const label = document.createElement("label");
-  label.textContent = name;
-
-  const select = document.createElement("select");
-  select.id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
-
-  for (let i = 0; i <= 5; i++) {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.textContent = i;
-    select.appendChild(opt);
+  // Safety check (if IDs don’t exist, stop cleanly)
+  if (!listDiv || !resultsDiv || !weaknessesDiv || !planPre) {
+    console.error("Missing required elements. Check IDs in index.html.");
+    return;
   }
 
-  select.value = 2;
-  row.append(label, select);
-  return row;
-}
+  function makeRow(name) {
+    const row = document.createElement("div");
+    row.className = "row";
 
-mechanics.forEach(m => listDiv.appendChild(makeRow(m)));
+    const label = document.createElement("label");
+    label.textContent = name;
 
-function getScores() {
-  return mechanics.map(name => {
-    const id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
-    return { name, val: Number(document.getElementById(id).value) };
-  });
-}
+    const select = document.createElement("select");
+    select.id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
 
-function buildPlan(weak) {
-  let text = "";
-  weak.forEach((w, i) => {
-    text += `Day ${i + 1}: ${w.name}\n`;
-    text += `  - ${drillTips[w.name]}\n`;
-    text += `  - Play 2–3 games focusing only on this skill.\n\n`;
-  });
+    for (let i = 0; i <= 5; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      select.appendChild(opt);
+    }
 
-  text += "Day 7: Replay review (10 min) + freeplay (10 min)\n";
-  return text;
-}
-
-document.getElementById("generate").onclick = () => {
-  const scores = getScores().sort((a, b) => a.val - b.val);
-  const weak = scores.slice(0, 3);
-
-  document.getElementById("weaknesses").textContent =
-    weak.map(w => `${w.name} (${w.val}/5)`).join(" • ");
-
-  document.getElementById("plan").textContent = buildPlan(weak);
-  document.getElementById("results").style.display = "block";
-  document.getElementById("copied").textContent = "";
-};
-
-document.getElementById("reset").onclick = () => {
-  mechanics.forEach(name => {
-    document.getElementById(`m_${name.replace(/[^a-z0-9]/gi, "_")}`).value = 2;
-  });
-  document.getElementById("results").style.display = "none";
-  document.getElementById("copied").textContent = "";
-};
-
-document.getElementById("copy").onclick = async () => {
-  const text = document.getElementById("plan").textContent;
-  try {
-    await navigator.clipboard.writeText(text);
-    document.getElementById("copied").textContent = "Copied!";
-  } catch {
-    document.getElementById("copied").textContent = "Copy failed — select and copy.";
+    select.value = 2;
+    row.append(label, select);
+    return row;
   }
-};
+
+  // Build the list
+  listDiv.innerHTML = "";
+  mechanics.forEach(m => listDiv.appendChild(makeRow(m)));
+
+  function getScores() {
+    return mechanics.map(name => {
+      const id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
+      const el = document.getElementById(id);
+      return { name, val: Number(el ? el.value : 0) };
+    });
+  }
+
+  function buildPlan(weak) {
+    let text = "";
+    weak.forEach((w, i) => {
+      text += `Day ${i + 1}: ${w.name}\n`;
+      text += `  - ${drillTips[w.name] || "10–15 minutes focused practice."}\n`;
+      text += `  - Play 2–3 games focusing only on this skill.\n\n`;
+    });
+    text += "Day 7: Replay review (10 min) + freeplay (10 min)\n";
+    return text;
+  }
+
+  document.getElementById("generate").onclick = () => {
+    const scores = getScores().sort((a, b) => a.val - b.val);
+    const weak = scores.slice(0, 3);
+
+    weaknessesDiv.textContent = weak.map(w => `${w.name} (${w.val}/5)`).join(" • ");
+    planPre.textContent = buildPlan(weak);
+
+    resultsDiv.style.display = "block";
+    if (copiedSpan) copiedSpan.textContent = "";
+  };
+
+  document.getElementById("reset").onclick = () => {
+    mechanics.forEach(name => {
+      const id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
+      const el = document.getElementById(id);
+      if (el) el.value = 2;
+    });
+    resultsDiv.style.display = "none";
+    if (copiedSpan) copiedSpan.textContent = "";
+  };
+
+  document.getElementById("copy").onclick = async () => {
+    const text = planPre.textContent || "";
+    try {
+      await navigator.clipboard.writeText(text);
+      if (copiedSpan) copiedSpan.textContent = "Copied!";
+    } catch {
+      if (copiedSpan) copiedSpan.textContent = "Copy failed — select and copy.";
+    }
+  };
+});
 </script>
 </body>
 </html>
+
 
