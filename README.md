@@ -1,0 +1,1 @@
+A simple Rocket League mechanics tracker that lets players rate their skills (0–5) and instantly generates their top weaknesses and a personalized 7-day practice plan. No accounts, no backend — just a clean, lightweight tool focused on improving gameplay.
