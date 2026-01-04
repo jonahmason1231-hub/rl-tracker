@@ -12,7 +12,7 @@
     <header class="top">
       <div>
         <h1>Rocket League Mechanics Tracker</h1>
-        <p class="sub">Rate each mechanic (0–5). Autosaves. Generates a 7-day plan + AI tips.</p>
+        <p class="sub">Rate mechanics (0–5). Autosaves. Score/grade, badges, streaks, history, share cards, and more.</p>
       </div>
 
       <div class="preset">
@@ -31,6 +31,84 @@
       </div>
     </header>
 
+    <!-- 1) Player profile -->
+    <div class="card">
+      <h2 class="sectionTitle">Player</h2>
+      <div class="grid3">
+        <div>
+          <label class="fieldLabel" for="playerName">Player name</label>
+          <input id="playerName" placeholder="Jonah" />
+        </div>
+
+        <div>
+          <label class="fieldLabel" for="platform">Platform</label>
+          <select id="platform">
+            <option value="Epic">Epic</option>
+            <option value="Steam">Steam</option>
+            <option value="PlayStation">PlayStation</option>
+            <option value="Xbox">Xbox</option>
+            <option value="Switch">Switch</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="fieldLabel" for="rankNow">Current rank</label>
+          <select id="rankNow">
+            <option value="Unranked">Unranked</option>
+            <option value="Bronze">Bronze</option>
+            <option value="Silver">Silver</option>
+            <option value="Gold">Gold</option>
+            <option value="Platinum">Platinum</option>
+            <option value="Diamond">Diamond</option>
+            <option value="Champion">Champion</option>
+            <option value="Grand Champ">Grand Champ</option>
+            <option value="SSL">SSL</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="fieldLabel" for="rankGoal">Goal rank</label>
+          <select id="rankGoal">
+            <option value="Bronze">Bronze</option>
+            <option value="Silver">Silver</option>
+            <option value="Gold">Gold</option>
+            <option value="Platinum">Platinum</option>
+            <option value="Diamond" selected>Diamond</option>
+            <option value="Champion">Champion</option>
+            <option value="Grand Champ">Grand Champ</option>
+            <option value="SSL">SSL</option>
+          </select>
+        </div>
+
+        <div class="span2">
+          <div class="small">
+            Your info saves on this device (no login). Share link can include your ratings for comparisons.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6) Streak + 7) Daily challenge -->
+    <div class="card">
+      <h2 class="sectionTitle">Daily</h2>
+      <div class="dailyRow">
+        <div class="pill">
+          <div class="pillTop">Streak</div>
+          <div class="pillBig"><span id="streakNum">0</span> 🔥</div>
+          <div class="small" id="streakNote">Check in once per day.</div>
+          <button class="btn2 mini" id="checkIn">Check-in</button>
+        </div>
+
+        <div class="pill">
+          <div class="pillTop">Today’s Challenge</div>
+          <div class="pillBig" id="challengeTitle">—</div>
+          <div class="small" id="challengeDesc">Click to generate a challenge.</div>
+          <button class="btn2 mini" id="newChallenge">New Challenge</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mechanics -->
     <div class="card">
       <h2 class="sectionTitle">Mechanics</h2>
       <div id="list"></div>
@@ -40,12 +118,40 @@
       <button class="btn" id="generate">Generate Plan</button>
       <button class="btn2" id="reset">Reset</button>
       <button class="btn2" id="share">Share Link</button>
+      <button class="btn2" id="compare">Compare With Friend</button>
       <button class="btn2" id="download">Download Plan</button>
+      <button class="btn2" id="cardBtn">Download Result Card</button>
     </div>
 
+    <!-- Results -->
     <div class="card" id="results" style="display:none;">
-      <h2>Your Focus</h2>
-      <div id="weaknesses" class="small"></div>
+      <div class="resultsHeader">
+        <div>
+          <h2 id="focusTitle">Your Focus</h2>
+          <div class="small" id="headline">—</div>
+        </div>
+        <!-- 2) Score + Grade -->
+        <div class="scoreRow">
+          <div class="scoreBox">
+            <div class="scoreLabel">Mechanics Score</div>
+            <div class="scoreValue" id="scoreValue">0/60</div>
+          </div>
+          <div class="scoreBox">
+            <div class="scoreLabel">Grade</div>
+            <div class="scoreValue" id="gradeValue">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="small" id="weaknesses"></div>
+
+      <!-- 3) Top strengths -->
+      <h3>Top Strengths</h3>
+      <div id="strengths" class="small"></div>
+
+      <!-- 5) Badges -->
+      <h3>Badges</h3>
+      <div id="badges" class="badgeWrap"></div>
 
       <h3>AI Coach</h3>
       <div id="coach" class="coach"></div>
@@ -55,17 +161,41 @@
 
       <div class="actions">
         <button class="btn2" id="copy">Copy Plan</button>
+        <button class="btn2" id="saveSnapshot">Save Progress Snapshot</button>
         <span id="copied" class="small"></span>
       </div>
     </div>
 
+    <!-- 8) Progress History -->
+    <div class="card">
+      <h2 class="sectionTitle">Progress History</h2>
+      <div class="small">Snapshots you save (score over time). Use “Save Progress Snapshot” after generating.</div>
+      <div class="historyRow">
+        <button class="btn2 mini" id="clearHistory">Clear History</button>
+      </div>
+      <div id="historyList" class="historyList"></div>
+    </div>
+
+    <!-- 10) Leaderboard (Local) -->
+    <div class="card">
+      <h2 class="sectionTitle">Leaderboard</h2>
+      <div class="small">Local leaderboard (top scores saved on this device). Global leaderboard requires a backend later.</div>
+      <div class="historyRow">
+        <button class="btn2 mini" id="submitScore">Submit to Local Leaderboard</button>
+        <button class="btn2 mini" id="clearBoard">Clear Local Leaderboard</button>
+      </div>
+      <div id="boardList" class="historyList"></div>
+    </div>
+
     <footer class="footer">
-      Tip: After you edit code, refresh your GitHub Pages site with <strong>Ctrl + F5</strong>.
+      Tip: If changes don’t show, do a hard refresh: <strong>Ctrl + F5</strong>.
     </footer>
   </div>
 
 <script>
 window.addEventListener("DOMContentLoaded", () => {
+  const STORAGE = "rl_tracker_";
+
   const mechanics = [
     "Shooting accuracy",
     "Power shots",
@@ -96,7 +226,6 @@ window.addEventListener("DOMContentLoaded", () => {
     "Boost management": "Focus on small pads and smart boosts (3 games)."
   };
 
-  // Rank presets (defaults). You can tweak these later.
   const presets = {
     bronze:   { base: 1 },
     silver:   { base: 2 },
@@ -108,152 +237,177 @@ window.addEventListener("DOMContentLoaded", () => {
     ssl:      { base: 5, "Air roll control": 5, "First touch (ground control)": 5, "Wall reads": 5, "Backboard defense": 5 }
   };
 
-  // AI coaching tips per mechanic
   const coaching = {
     "Shooting accuracy": [
       "Aim small: pick one corner per shot (don’t just hit net).",
-      "Shoot faster: one touch setup → shot. No extra touches.",
+      "Shoot faster: one touch setup → shot.",
       "Track misses: if you miss wide, slow down and focus placement."
     ],
     "Power shots": [
-      "Hit through the center of the ball with forward momentum.",
-      "Practice bounce shots (ball bounces once → you strike it).",
-      "Focus on clean contact, not speed of approach."
+      "Hit through the center with forward momentum.",
+      "Practice bounce shots (one bounce → strike).",
+      "Focus clean contact, not speed of approach."
     ],
     "First touch (ground control)": [
-      "Your first touch should have a purpose: catch, push, or pass.",
-      "Try feathering throttle to keep the ball close after contact.",
+      "First touch should have a purpose: catch, push, or pass.",
+      "Feather throttle to keep the ball close.",
       "Don’t boom it unless you’re clearing."
     ],
     "Dribbling": [
-      "Keep the ball on the hood and adjust with tiny steering.",
-      "Use small boosts, not full boost, to keep control.",
+      "Small steering adjustments—keep it on hood.",
+      "Use tiny boost bursts to stabilize.",
       "If you lose it, reset and go slower for 2 minutes."
     ],
     "Flicks": [
-      "Start with simple front flicks before fancy ones.",
-      "Practice timing: jump + flip right when the ball is stable.",
-      "If it pops weak, you’re flipping too early."
+      "Start with simple front flicks.",
+      "Flip when the ball is stable.",
+      "Weak flick = flipping too early."
     ],
     "Fast aerial": [
-      "Jump → boost → jump quickly (don’t wait).",
-      "Keep the nose slightly up, not straight vertical.",
-      "Stop boosting once you’ve reached the ball (save boost)."
+      "Jump → boost → jump quickly.",
+      "Nose slightly up, not vertical.",
+      "Stop boosting once you reach the ball."
     ],
     "Air roll control": [
-      "Pick one direction (air roll left OR right) and commit.",
-      "Do short air roll bursts, not constant spinning at first.",
-      "Practice controlled landing after aerial touches."
+      "Pick one direction (L or R) and commit.",
+      "Short bursts > constant spinning.",
+      "Practice controlled landings after touches."
     ],
     "Wall reads": [
-      "Read the bounce: wait half a second before jumping.",
-      "Approach parallel to the wall for smoother touches.",
-      "Prioritize a safe clear before trying a shot."
+      "Read the bounce—wait half a beat.",
+      "Approach parallel to the wall.",
+      "Clear first before going for a shot."
     ],
     "Backboard defense": [
-      "Rotate back post and face the play before jumping.",
-      "Your job is clear first, then control if you have time.",
-      "Don’t double jump early—wait for the ball path."
+      "Rotate back post and face play before jumping.",
+      "Clear first, control second.",
+      "Don’t jump early—wait for ball path."
     ],
     "Recoveries (landing / wavedash)": [
-      "Land with wheels down and hold powerslide briefly.",
-      "Practice half flips into wavedashes to regain speed.",
-      "Don’t flip when you should be landing clean."
+      "Land wheels down, tap powerslide briefly.",
+      "Half-flip into wavedash to regain speed.",
+      "Don’t flip when you should be landing."
     ],
     "Half-flip": [
-      "Focus on consistent inputs over speed.",
-      "Use it to rotate faster when you’re facing wrong way.",
-      "Don’t half-flip if a simple turn is safer."
+      "Consistency over speed.",
+      "Use it when facing the wrong way.",
+      "If a simple turn is safer—do that."
     ],
     "Boost management": [
-      "Stop chasing 100s—use small pads and stay in the play.",
-      "Use boost in short bursts, not full holds.",
-      "If you’re low, rotate out early instead of forcing plays."
+      "Stop chasing 100s—use small pads.",
+      "Short bursts, not full holds.",
+      "Rotate out early if you’re low."
     ]
   };
 
+  // Daily challenge pool (7)
+  const challenges = [
+    { title: "Fast Aerial Sprint", desc: "Freeplay: 20 fast aerial touches (try not to miss). Then play 2 games focusing on fast aerials." },
+    { title: "Shooting Sniper", desc: "Freeplay: 30 shots—aim only corners. Count how many hit your target corner." },
+    { title: "Recovery Racer", desc: "Freeplay: 5 minutes of recoveries—land clean, powerslide, wavedash. Then 3 casual games." },
+    { title: "Wall Read Week", desc: "Freeplay: 15 wall reads into clears. Then 2 games focusing ONLY on wall reads." },
+    { title: "Boost Economy", desc: "Play 3 games: prioritize small pads and stay above 30 boost whenever possible." },
+    { title: "Dribble Control", desc: "Freeplay: 10 minutes dribble carry. Reset if ball falls—aim for longer carries." },
+    { title: "Half-Flip Consistency", desc: "Practice 30 half-flips. Goal: 25 clean in a row (restart streak on mess-ups)." }
+  ];
+
+  // DOM
   const listDiv = document.getElementById("list");
   const resultsDiv = document.getElementById("results");
   const weaknessesDiv = document.getElementById("weaknesses");
+  const strengthsDiv = document.getElementById("strengths");
+  const badgesDiv = document.getElementById("badges");
   const coachDiv = document.getElementById("coach");
   const planPre = document.getElementById("plan");
   const copiedSpan = document.getElementById("copied");
   const presetSelect = document.getElementById("rankPreset");
 
-  const STORAGE_KEY_PREFIX = "rl_tracker_";
+  const playerName = document.getElementById("playerName");
+  const platform = document.getElementById("platform");
+  const rankNow = document.getElementById("rankNow");
+  const rankGoal = document.getElementById("rankGoal");
 
+  const focusTitle = document.getElementById("focusTitle");
+  const headlineEl = document.getElementById("headline");
+  const scoreValue = document.getElementById("scoreValue");
+  const gradeValue = document.getElementById("gradeValue");
+
+  const streakNum = document.getElementById("streakNum");
+  const streakNote = document.getElementById("streakNote");
+  const challengeTitle = document.getElementById("challengeTitle");
+  const challengeDesc = document.getElementById("challengeDesc");
+
+  const historyList = document.getElementById("historyList");
+  const boardList = document.getElementById("boardList");
+
+  // Helpers
   const idFor = (name) => `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
+  const nowIso = () => new Date().toISOString();
+  const todayKey = () => new Date().toISOString().slice(0,10);
 
-  function setRating(name, value, { save=true } = {}) {
+  function save(key, val){ localStorage.setItem(STORAGE + key, JSON.stringify(val)); }
+  function load(key, fallback=null){
+    const raw = localStorage.getItem(STORAGE + key);
+    if (!raw) return fallback;
+    try { return JSON.parse(raw); } catch { return fallback; }
+  }
+
+  function setRating(name, value, {saveIt=true} = {}) {
     const id = idFor(name);
     const el = document.getElementById(id);
     if (!el) return;
     el.value = String(value);
-    if (save) localStorage.setItem(STORAGE_KEY_PREFIX + id, String(value));
+    if (saveIt) localStorage.setItem(STORAGE + id, String(value));
   }
 
   function getRating(name) {
-    const id = idFor(name);
-    const el = document.getElementById(id);
-    if (!el) return 0;
-    return Number(el.value);
+    const el = document.getElementById(idFor(name));
+    return el ? Number(el.value) : 0;
   }
-
-  function makeRow(name) {
-    const row = document.createElement("div");
-    row.className = "row";
-
-    const label = document.createElement("label");
-    label.textContent = name;
-
-    const select = document.createElement("select");
-    select.id = idFor(name);
-
-    for (let i = 0; i <= 5; i++) {
-      const opt = document.createElement("option");
-      opt.value = i;
-      opt.textContent = i;
-      select.appendChild(opt);
-    }
-
-    // load saved (or default 2)
-    const saved = localStorage.getItem(STORAGE_KEY_PREFIX + select.id);
-    select.value = saved !== null ? saved : "2";
-
-    select.addEventListener("change", () => {
-      localStorage.setItem(STORAGE_KEY_PREFIX + select.id, select.value);
-      presetSelect.value = "custom";
-      localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
-    });
-
-    row.append(label, select);
-    return row;
-  }
-
-  // Build UI list
-  listDiv.innerHTML = "";
-  mechanics.forEach(m => listDiv.appendChild(makeRow(m)));
 
   function getScores() {
     return mechanics.map(name => ({ name, val: getRating(name) }));
   }
 
-  function topWeaknesses(scores, count=3) {
-    const sorted = [...scores].sort((a,b) => a.val - b.val);
-    return sorted.slice(0, count);
+  function topN(scores, n, dir="low"){
+    const sorted = [...scores].sort((a,b)=> dir==="low" ? a.val-b.val : b.val-a.val);
+    return sorted.slice(0,n);
+  }
+
+  function calcScoreAndGrade(scores){
+    const total = scores.reduce((sum, s) => sum + s.val, 0);
+    const max = mechanics.length * 5;
+    const pct = total / max;
+
+    let grade = "D";
+    if (pct >= 0.92) grade = "S";
+    else if (pct >= 0.80) grade = "A";
+    else if (pct >= 0.65) grade = "B";
+    else if (pct >= 0.45) grade = "C";
+
+    let text = "Keep grinding.";
+    if (pct >= 0.85) text = "All-around solid — polish the weak spots.";
+    else if (pct >= 0.65) text = "Strong foundation — focus your bottom 3.";
+    else if (pct >= 0.45) text = "Good start — consistency will boost your rank.";
+    else text = "Mechanics needs work — you’ll improve fast with a plan.";
+
+    return { total, max, grade, text, pct };
   }
 
   function buildCoachText(weak3) {
-    // Build a short “AI coach” section
     let out = "";
     weak3.forEach((w, idx) => {
-      const tips = coaching[w.name] || ["Practice 10–15 minutes focused reps.", "Play 2–3 games focusing on this.", "Review 1 replay mistake."];
+      const tips = coaching[w.name] || [
+        "Practice 10–15 minutes focused reps.",
+        "Play 2–3 games focusing on this.",
+        "Review 1 replay mistake."
+      ];
       out += `${idx+1}) ${w.name} (${w.val}/5)\n`;
       out += `   • ${tips[0]}\n`;
       out += `   • ${tips[1]}\n`;
       out += `   • ${tips[2]}\n\n`;
     });
-    out += "Quick rule: focus on ONE weakness per match. Don’t try to fix everything at once.\n";
+    out += "Quick rule: focus on ONE weakness per match.\n";
     return out.trim();
   }
 
@@ -283,41 +437,227 @@ window.addEventListener("DOMContentLoaded", () => {
     return text.trim();
   }
 
-  // Share link encoding/decoding
-  function encodeRatings() {
-    const data = {};
-    mechanics.forEach(name => data[idFor(name)] = getRating(name));
+  // 5) Badges
+  function computeBadges(scores){
+    const get = (name)=> scores.find(s=>s.name===name)?.val ?? 0;
+    const badges = [];
+
+    if (get("Fast aerial") >= 4) badges.push({ t:"Aerial Apprentice", d:"Fast aerial 4+", e:"🚀" });
+    if (get("Boost management") >= 4) badges.push({ t:"Boost Economist", d:"Boost management 4+", e:"⛽" });
+    if (get("Shooting accuracy") >= 4) badges.push({ t:"Sniper", d:"Shooting accuracy 4+", e:"🎯" });
+    if (get("Recoveries (landing / wavedash)") >= 4) badges.push({ t:"Recovery King", d:"Recoveries 4+", e:"⚡" });
+    if (get("Air roll control") >= 4) badges.push({ t:"Spin Master", d:"Air roll 4+", e:"🌀" });
+    if (get("Backboard defense") >= 4) badges.push({ t:"Backboard Bodyguard", d:"Backboard defense 4+", e:"🛡️" });
+
+    // fun “balanced” badge
+    const min = Math.min(...scores.map(s=>s.val));
+    if (min >= 3) badges.push({ t:"Consistent", d:"All mechanics 3+", e:"✅" });
+
+    if (badges.length === 0) badges.push({ t:"New Challenger", d:"Keep leveling up!", e:"🌱" });
+    return badges;
+  }
+
+  // 9) Share + Compare (ratings in URL)
+  function encodeRatings(includeName=false) {
+    const data = { r: {} };
+    mechanics.forEach(name => data.r[idFor(name)] = getRating(name));
+
+    if (includeName){
+      data.p = {
+        n: playerName.value || "",
+        pf: platform.value || "Epic",
+        rn: rankNow.value || "Unranked",
+        rg: rankGoal.value || "Diamond"
+      };
+    }
+
     const json = JSON.stringify(data);
-    return encodeURIComponent(btoa(json));
+    return encodeURIComponent(btoa(unescape(encodeURIComponent(json))));
   }
 
   function decodeRatings(encoded) {
     try {
-      const json = atob(decodeURIComponent(encoded));
+      const json = decodeURIComponent(escape(atob(decodeURIComponent(encoded))));
       const data = JSON.parse(json);
-      Object.keys(data).forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.value = String(data[id]);
-          localStorage.setItem(STORAGE_KEY_PREFIX + id, String(data[id]));
-        }
-      });
+
+      if (data?.r){
+        Object.keys(data.r).forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.value = String(data.r[id]);
+            localStorage.setItem(STORAGE + id, String(data.r[id]));
+          }
+        });
+      }
+
+      if (data?.p){
+        if (data.p.n) playerName.value = data.p.n;
+        if (data.p.pf) platform.value = data.p.pf;
+        if (data.p.rn) rankNow.value = data.p.rn;
+        if (data.p.rg) rankGoal.value = data.p.rg;
+        persistProfile();
+      }
+
       presetSelect.value = "custom";
-      localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
+      localStorage.setItem(STORAGE + "preset", "custom");
       return true;
     } catch {
       return false;
     }
   }
 
-  // Load from share link if present
-  const params = new URLSearchParams(window.location.search);
-  if (params.has("r")) {
-    decodeRatings(params.get("r"));
+  function makeShareUrl(includeName=false){
+    const payload = encodeRatings(includeName);
+    return `${window.location.origin}${window.location.pathname}?r=${payload}`;
   }
 
+  // 8) Progress history
+  function renderHistory(){
+    const hist = load("history", []);
+    if (!hist.length){
+      historyList.innerHTML = `<div class="empty">No snapshots yet. Generate a plan, then click “Save Progress Snapshot.”</div>`;
+      return;
+    }
+    historyList.innerHTML = hist
+      .slice().reverse()
+      .map(h => {
+        const dt = new Date(h.t).toLocaleString();
+        return `<div class="historyItem">
+          <div><strong>${h.name}</strong> <span class="muted">(${h.platform} • ${h.rankNow} → ${h.rankGoal})</span></div>
+          <div class="muted">${dt}</div>
+          <div class="historyLine">Score: <strong>${h.score}/${h.max}</strong> • Grade: <strong>${h.grade}</strong></div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  // 10) Local leaderboard
+  function renderBoard(){
+    const board = load("board", []);
+    if (!board.length){
+      boardList.innerHTML = `<div class="empty">No leaderboard entries yet. Generate a plan, then “Submit to Local Leaderboard.”</div>`;
+      return;
+    }
+    const sorted = [...board].sort((a,b)=> b.score - a.score).slice(0,10);
+    boardList.innerHTML = sorted
+      .map((b, idx) => {
+        return `<div class="historyItem">
+          <div><strong>#${idx+1}</strong> ${b.name} <span class="muted">(${b.rankNow})</span></div>
+          <div class="historyLine">Score: <strong>${b.score}/${b.max}</strong> • Grade: <strong>${b.grade}</strong></div>
+        </div>`;
+      })
+      .join("");
+  }
+
+  // 6) Streak
+  function refreshStreakUI(){
+    const streak = load("streak", { count: 0, last: null });
+    streakNum.textContent = streak.count || 0;
+
+    const t = todayKey();
+    if (streak.last === t) streakNote.textContent = "Checked in today. Nice.";
+    else streakNote.textContent = "Check in once per day.";
+  }
+
+  function doCheckIn(){
+    const streak = load("streak", { count: 0, last: null });
+    const t = todayKey();
+
+    if (streak.last === t) return; // already checked in
+
+    // if last is yesterday, increment; otherwise reset to 1
+    const lastDate = streak.last ? new Date(streak.last) : null;
+    const todayDate = new Date(t);
+    const yesterday = new Date(todayDate);
+    yesterday.setDate(todayDate.getDate() - 1);
+
+    const lastStr = lastDate ? lastDate.toISOString().slice(0,10) : null;
+    const yStr = yesterday.toISOString().slice(0,10);
+
+    if (lastStr === yStr) streak.count += 1;
+    else streak.count = 1;
+
+    streak.last = t;
+    save("streak", streak);
+    refreshStreakUI();
+  }
+
+  // 7) Daily challenge (deterministic per day, but can refresh)
+  function setDailyChallenge(forceNew=false){
+    const key = "challenge";
+    if (!forceNew){
+      const existing = load(key, null);
+      if (existing && existing.day === todayKey()){
+        challengeTitle.textContent = existing.title;
+        challengeDesc.textContent = existing.desc;
+        return;
+      }
+    }
+    const idx = Math.floor(Math.random() * challenges.length);
+    const c = challenges[idx];
+    save(key, { day: todayKey(), ...c });
+    challengeTitle.textContent = c.title;
+    challengeDesc.textContent = c.desc;
+  }
+
+  // Profile persistence
+  function persistProfile(){
+    save("profile", {
+      name: playerName.value || "",
+      platform: platform.value || "Epic",
+      rankNow: rankNow.value || "Unranked",
+      rankGoal: rankGoal.value || "Diamond"
+    });
+  }
+  function loadProfile(){
+    const p = load("profile", null);
+    if (!p) return;
+    if (p.name) playerName.value = p.name;
+    if (p.platform) platform.value = p.platform;
+    if (p.rankNow) rankNow.value = p.rankNow;
+    if (p.rankGoal) rankGoal.value = p.rankGoal;
+  }
+
+  // Build mechanics rows
+  function makeRow(name) {
+    const row = document.createElement("div");
+    row.className = "row";
+
+    const label = document.createElement("label");
+    label.textContent = name;
+
+    const select = document.createElement("select");
+    select.id = idFor(name);
+
+    for (let i = 0; i <= 5; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      select.appendChild(opt);
+    }
+
+    const saved = localStorage.getItem(STORAGE + select.id);
+    select.value = saved !== null ? saved : "2";
+
+    select.addEventListener("change", () => {
+      localStorage.setItem(STORAGE + select.id, select.value);
+      presetSelect.value = "custom";
+      localStorage.setItem(STORAGE + "preset", "custom");
+    });
+
+    row.append(label, select);
+    return row;
+  }
+
+  listDiv.innerHTML = "";
+  mechanics.forEach(m => listDiv.appendChild(makeRow(m)));
+
+  // Load from share link if present
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("r")) decodeRatings(params.get("r"));
+
   // Load saved preset
-  const savedPreset = localStorage.getItem(STORAGE_KEY_PREFIX + "preset");
+  const savedPreset = localStorage.getItem(STORAGE + "preset");
   if (savedPreset && presetSelect.querySelector(`option[value="${savedPreset}"]`)) {
     presetSelect.value = savedPreset;
   }
@@ -329,29 +669,70 @@ window.addEventListener("DOMContentLoaded", () => {
     const base = preset.base ?? 2;
     mechanics.forEach(name => {
       const val = preset[name] ?? base;
-      setRating(name, val, { save: true });
+      setRating(name, val, { saveIt: true });
     });
 
     presetSelect.value = key;
-    localStorage.setItem(STORAGE_KEY_PREFIX + "preset", key);
+    localStorage.setItem(STORAGE + "preset", key);
   }
 
   presetSelect.addEventListener("change", () => {
     const val = presetSelect.value;
     if (val === "custom") {
-      localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
+      localStorage.setItem(STORAGE + "preset", "custom");
       return;
     }
     applyPreset(val);
   });
 
+  // Profile listeners
+  loadProfile();
+  playerName.addEventListener("input", persistProfile);
+  platform.addEventListener("change", persistProfile);
+  rankNow.addEventListener("change", persistProfile);
+  rankGoal.addEventListener("change", persistProfile);
+
+  // Daily init
+  refreshStreakUI();
+  setDailyChallenge(false);
+
   // Buttons
+  document.getElementById("checkIn").onclick = doCheckIn;
+  document.getElementById("newChallenge").onclick = () => setDailyChallenge(true);
+
   document.getElementById("generate").onclick = () => {
     const scores = getScores();
-    const weak3 = topWeaknesses(scores, 3);
+    const weak3 = topN(scores, 3, "low");
+    const strong3 = topN(scores, 3, "high");
+
+    // Score + grade + headline
+    const s = calcScoreAndGrade(scores);
+    scoreValue.textContent = `${s.total}/${s.max}`;
+    gradeValue.textContent = s.grade;
+    headlineEl.textContent = s.text;
+
+    // Titles / focus
+    const n = (playerName.value || "").trim();
+    const nameLabel = n ? n : "Your";
+    focusTitle.textContent = `${nameLabel} Focus`;
 
     weaknessesDiv.textContent =
-      `Focus on: ${weak3.map(w => `${w.name} (${w.val}/5)`).join(" • ")}`;
+      `Bottom 3: ${weak3.map(w => `${w.name} (${w.val}/5)`).join(" • ")}`;
+
+    strengthsDiv.textContent =
+      `Top 3: ${strong3.map(w => `${w.name} (${w.val}/5)`).join(" • ")}`;
+
+    // Badges
+    const b = computeBadges(scores);
+    badgesDiv.innerHTML = b.map(x => `
+      <div class="badge">
+        <div class="badgeEmoji">${x.e}</div>
+        <div>
+          <div class="badgeTitle">${x.t}</div>
+          <div class="badgeDesc">${x.d}</div>
+        </div>
+      </div>
+    `).join("");
 
     coachDiv.textContent = buildCoachText(weak3);
     planPre.textContent = buildPlan(weak3);
@@ -361,14 +742,19 @@ window.addEventListener("DOMContentLoaded", () => {
   };
 
   document.getElementById("reset").onclick = () => {
-    mechanics.forEach(name => setRating(name, 2, { save: true }));
+    mechanics.forEach(name => setRating(name, 2, { saveIt: true }));
     presetSelect.value = "custom";
-    localStorage.setItem(STORAGE_KEY_PREFIX + "preset", "custom");
+    localStorage.setItem(STORAGE + "preset", "custom");
 
     resultsDiv.style.display = "none";
     copiedSpan.textContent = "";
     coachDiv.textContent = "";
     planPre.textContent = "";
+    strengthsDiv.textContent = "";
+    badgesDiv.innerHTML = "";
+    headlineEl.textContent = "—";
+    scoreValue.textContent = `0/${mechanics.length*5}`;
+    gradeValue.textContent = "—";
   };
 
   document.getElementById("copy").onclick = async () => {
@@ -392,22 +778,232 @@ window.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(a);
     a.click();
     a.remove();
-
     URL.revokeObjectURL(url);
   };
 
   document.getElementById("share").onclick = async () => {
-    const r = encodeRatings();
-    const shareUrl = `${window.location.origin}${window.location.pathname}?r=${r}`;
-
+    const shareUrl = makeShareUrl(true); // include name/platform/rank in the share link
     try {
       await navigator.clipboard.writeText(shareUrl);
       copiedSpan.textContent = "Share link copied!";
     } catch {
-      copiedSpan.textContent = "Couldn’t copy — here it is in the address bar.";
+      copiedSpan.textContent = "Couldn’t copy — link added to address bar.";
       window.history.replaceState(null, "", shareUrl);
     }
   };
+
+  // 9) Compare mode
+  document.getElementById("compare").onclick = async () => {
+    const myUrl = makeShareUrl(true);
+    const msg = "Copy and paste your friend's shared link here to compare:";
+    const friendUrl = prompt(msg, "");
+    if (!friendUrl) return;
+
+    let friendPayload = null;
+    try {
+      const u = new URL(friendUrl);
+      friendPayload = u.searchParams.get("r");
+    } catch {
+      copiedSpan.textContent = "Invalid link.";
+      return;
+    }
+    if (!friendPayload) {
+      copiedSpan.textContent = "No ratings found in that link.";
+      return;
+    }
+
+    // Decode friend into object (without overwriting your UI)
+    let friendData = null;
+    try {
+      const json = decodeURIComponent(escape(atob(decodeURIComponent(friendPayload))));
+      friendData = JSON.parse(json);
+    } catch {
+      copiedSpan.textContent = "Couldn’t read friend link.";
+      return;
+    }
+
+    // Build comparison text
+    const myScores = getScores();
+    const friendScores = mechanics.map(name => {
+      const id = idFor(name);
+      const v = friendData?.r?.[id] ?? 0;
+      return { name, val: Number(v) };
+    });
+
+    const myTotal = myScores.reduce((s,x)=>s+x.val,0);
+    const frTotal = friendScores.reduce((s,x)=>s+x.val,0);
+
+    const friendName = friendData?.p?.n ? friendData.p.n : "Friend";
+    const meName = (playerName.value || "You").trim();
+
+    // show comparison inside coach box (easy)
+    const diff = mechanics.map(name => {
+      const a = myScores.find(x=>x.name===name).val;
+      const b = friendScores.find(x=>x.name===name).val;
+      const d = a - b;
+      const sign = d>0 ? "+" : d<0 ? "" : "±";
+      return `${name}: ${meName} ${a} vs ${friendName} ${b} (${sign}${d})`;
+    }).join("\n");
+
+    coachDiv.textContent =
+      `COMPARE MODE\n\nTotal: ${meName} ${myTotal}/${mechanics.length*5} vs ${friendName} ${frTotal}/${mechanics.length*5}\n\n` +
+      diff +
+      `\n\nTip: Share your link to compare again:\n${myUrl}`;
+
+    resultsDiv.style.display = "block";
+    copiedSpan.textContent = "Comparison shown in AI Coach section.";
+  };
+
+  // 8) Save progress snapshot
+  document.getElementById("saveSnapshot").onclick = () => {
+    const scores = getScores();
+    const s = calcScoreAndGrade(scores);
+
+    const p = load("profile", { name:"", platform:"Epic", rankNow:"Unranked", rankGoal:"Diamond" });
+    const entry = {
+      t: nowIso(),
+      name: (p.name || "Player"),
+      platform: p.platform || "Epic",
+      rankNow: p.rankNow || "Unranked",
+      rankGoal: p.rankGoal || "Diamond",
+      score: s.total,
+      max: s.max,
+      grade: s.grade
+    };
+
+    const hist = load("history", []);
+    hist.push(entry);
+    save("history", hist);
+    renderHistory();
+    copiedSpan.textContent = "Snapshot saved.";
+  };
+
+  document.getElementById("clearHistory").onclick = () => {
+    save("history", []);
+    renderHistory();
+  };
+
+  // 10) Local leaderboard submit
+  document.getElementById("submitScore").onclick = () => {
+    const scores = getScores();
+    const s = calcScoreAndGrade(scores);
+    const p = load("profile", { name:"Player", platform:"Epic", rankNow:"Unranked", rankGoal:"Diamond" });
+
+    const entry = {
+      name: (p.name || "Player").slice(0,24),
+      rankNow: p.rankNow || "Unranked",
+      score: s.total,
+      max: s.max,
+      grade: s.grade,
+      t: nowIso()
+    };
+
+    const board = load("board", []);
+    board.push(entry);
+    save("board", board);
+    renderBoard();
+  };
+
+  document.getElementById("clearBoard").onclick = () => {
+    save("board", []);
+    renderBoard();
+  };
+
+  // 4) Result card image (download PNG)
+  function downloadResultCard(){
+    // Ensure results exist
+    const scores = getScores();
+    const s = calcScoreAndGrade(scores);
+    const weak3 = topN(scores, 3, "low").map(x=>`${x.name} (${x.val}/5)`);
+    const strong3 = topN(scores, 3, "high").map(x=>`${x.name} (${x.val}/5)`);
+
+    const p = load("profile", { name:"Player", platform:"Epic", rankNow:"Unranked", rankGoal:"Diamond" });
+    const name = (p.name || "Player").trim() || "Player";
+
+    const canvas = document.createElement("canvas");
+    const w = 1000, h = 560;
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+
+    // background
+    const grad = ctx.createLinearGradient(0,0,w,h);
+    grad.addColorStop(0, "#0e1320");
+    grad.addColorStop(1, "#151c33");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,w,h);
+
+    // glow
+    ctx.globalAlpha = 0.18;
+    ctx.fillStyle = "#5f7cff";
+    ctx.beginPath();
+    ctx.ellipse(220, 140, 240, 140, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.globalAlpha = 1;
+
+    // card
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    roundRect(ctx, 40, 40, w-80, h-80, 22);
+    ctx.fill();
+
+    // text
+    ctx.fillStyle = "#e9ecf3";
+    ctx.font = "700 34px system-ui, Segoe UI, Arial";
+    ctx.fillText("Rocket League Mechanics Tracker", 80, 105);
+
+    ctx.font = "600 20px system-ui, Segoe UI, Arial";
+    ctx.fillStyle = "#b8c0dd";
+    ctx.fillText(`${name} • ${p.platform} • ${p.rankNow} → ${p.rankGoal}`, 80, 142);
+
+    ctx.fillStyle = "#e9ecf3";
+    ctx.font = "800 52px system-ui, Segoe UI, Arial";
+    ctx.fillText(`${s.total}/${s.max}`, 80, 220);
+
+    ctx.font = "800 52px system-ui, Segoe UI, Arial";
+    ctx.fillText(`Grade ${s.grade}`, 300, 220);
+
+    ctx.fillStyle = "#b8c0dd";
+    ctx.font = "600 18px system-ui, Segoe UI, Arial";
+    ctx.fillText(s.text, 80, 255);
+
+    ctx.fillStyle = "#e9ecf3";
+    ctx.font = "800 22px system-ui, Segoe UI, Arial";
+    ctx.fillText("Top Strengths", 80, 305);
+    ctx.fillText("Bottom Weaknesses", 520, 305);
+
+    ctx.fillStyle = "#b8c0dd";
+    ctx.font = "600 18px system-ui, Segoe UI, Arial";
+    strong3.forEach((t, i)=> ctx.fillText(`• ${t}`, 80, 340 + i*28));
+    weak3.forEach((t, i)=> ctx.fillText(`• ${t}`, 520, 340 + i*28));
+
+    ctx.fillStyle = "#b8c0dd";
+    ctx.font = "600 16px system-ui, Segoe UI, Arial";
+    ctx.fillText("Share this + compare with friends", 80, 480);
+
+    const url = canvas.toDataURL("image/png");
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "rl-tracker-result.png";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+  }
+
+  document.getElementById("cardBtn").onclick = () => downloadResultCard();
+
+  // Render initial lists
+  renderHistory();
+  renderBoard();
 });
 </script>
 </body>
