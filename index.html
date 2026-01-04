@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rocket League Mechanics Tracker</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 760px; margin: 24px auto; padding: 0 12px; }
+    h1 { margin-bottom: 6px; }
+    .sub { color: #444; margin-top: 0; }
+    .row { display: flex; gap: 12px; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom
+    label { font-weight: 600; }
+    select { padding: 6px; }
+    button { padding: 10px 12px; border: 0; border-radius: 8px; cursor: pointer; }
+    .btn { background: #111; color: #fff; }
+    .btn2 { background: #eee; }
+    .card { background: #fafafa; border: 1px solid #eee; border-radius: 12px; padding: 12px; margin-top: 14px; }
+    .small { color: #555; font-size: 0.95rem; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+  </style>
+</head>
+<body>
+  <h1>Rocket League Mechanics Tracker</h1>
+  <p class="sub">Rate each mechanic (0–5). Get your top weaknesses + a simple 7-day plan.</p>
+  <div id="list"></div>
+  <div style="display:flex; gap:10px; margin-top:14px;">
+    <button class="btn" id="generate">Generate Plan</button>
+    <button class="btn2" id="reset">Reset</button>
+  </div>
+  <div class="card" id="results" style="display:none;">
+    <h2 style="margin-top:0;">Your Focus</h2>
+    <div id="weaknesses" class="small"></div>
+    <h3>7-Day Plan</h3>
+    <pre id="plan"></pre>
+    <button class="btn2" id="copy">Copy Plan</button>
+    <span id="copied" class="small" style="margin-left:10px;"></span>
+  </div>
+<script>
+  const mechanics = [
+    "Shooting accuracy",
+    "Power shots",
+    "First touch (ground control)",
+    "Dribbling",
+    "Flicks",
+    "Fast aerial",
+    "Air roll control",
+    "Wall reads",
+    "Backboard defense",
+    "Recoveries (landing/wavedash)",
+    "Half-flip",
+    "Boost management"
+  ];
+  const drillTips = {
+    "Shooting accuracy": "Freeplay: shoot corners + on-target shots (10 min).",
+    "Power shots": "Training: power clears + boom touches (10 min).",
+    "First touch (ground control)": "Freeplay: soft first touches into control (10 min).",
+    "Dribbling": "Freeplay: carry ball without losing it (10 min).",
+    "Flicks": "Training: practice 10 clean flicks (10 min).",
+    "Fast aerial": "Freeplay: fast aerial to crossbar/ceiling touches (10 min).",
+    "Air roll control": "Training: air roll through rings/custom map if available (10–15 min).",
+    "Wall reads": "Freeplay: wall bounces + reads into clear/shoot (10 min).",
+    "Backboard defense": "Training: backboard clears + first touch out (10 min).",
+    "Recoveries (landing/wavedash)": "Freeplay: recover fast after jumps (10 min).",
+    "Half-flip": "Practice 20 half-flips cleanly (5–10 min).",
+    "Boost management": "Games: focus on small pads + avoid panic boosts (3 games)."
+  };
+  const listDiv = document.getElementById("list");
+  function makeRow(name) {
+    const row = document.createElement("div");
+    row.className = "row";
+    const label = document.createElement("label");
+    label.textContent = name;
+    const select = document.createElement("select");
+    select.id = `m_${name.replace(/[^a-z0-9]/gi,'_')}`;
+    for (let i = 0; i <= 5; i++) {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = i;
+      select.appendChild(opt);
+    }
+    select.value = 2; // default
+    row.appendChild(label);
+    row.appendChild(select);
+    return row;
+  }
+  mechanics.forEach(m => listDiv.appendChild(makeRow(m)));
+  function getScores() {
+    return mechanics.map(name => {
+      const id = `m_${name.replace(/[^a-z0-9]/gi,'_')}`;
+      const val = Number(document.getElementById(id).value);
+      return { name, val };
+    });
+  }
+  function buildPlan(weak3) {
+    const [a,b,c] = weak3.map(x => x.name);
+    const days = [
+      { day: "Day 1", focus: a },
+      { day: "Day 2", focus: b },
+      { day: "Day 3", focus: a },
+      { day: "Day 4", focus: c },
+      { day: "Day 5", focus: b },
+      { day: "Day 6", focus: c },
+      { day: "Day 7", focus: "Replay review + freeplay" },
+    ];
+    let text = "";
+    for (const d of days) {
+      if (d.focus === "Replay review + freeplay") {
+        text += `${d.day}: Replay review (10 min) — pick 1 mistake to fix. Then freeplay (10 min).\n`;
+      } else {
+        text += `${d.day}: ${d.focus}\n`;
+        text += `  - ${drillTips[d.focus] || "10–15 minutes focused practice."}\n`;
+        text += `  - Then play 2–3 games focusing ONLY on ${d.focus}.\n\n`;
+      }
+    }
+    text += `\nTop 3 weaknesses: ${a}, ${b}, ${c}\n`;
+    return text.trim();
+  }
+  document.getElementById("generate").addEventListener("click", () => {
+    const scores = getScores();
+    scores.sort((x,y) => x.val - y.val);
+    const weak3 = scores.slice(0,3);
+    document.getElementById("weaknesses").textContent =
+      `Focus on: ${weak3.map(w => `${w.name} (rated ${w.val}/5)`).join(" • ")}`;
+    const plan = buildPlan(weak3);
+    document.getElementById("plan").textContent = plan;
+    document.getElementById("results").style.display = "block";
+    document.getElementById("copied").textContent = "";
+  });
+  document.getElementById("copy").addEventListener("click", async () => {
+    const text = document.getElementById("plan").textContent;
+    try {
+      await navigator.clipboard.writeText(text);
+      document.getElementById("copied").textContent = "Copied ";
+    } catch {
+      document.getElementById("copied").textContent = "Copy failed — select text and copy.";
+    }
+  });
+  document.getElementById("reset").addEventListener("click", () => {
+    mechanics.forEach(name => {
+      const id = `m_${name.replace(/[^a-z0-9]/gi,'_')}`;
+      document.getElementById(id).value = 2;
+    });
+    document.getElementById("results").style.display = "none";
+  });
+</script>
+</body>
+</html>
