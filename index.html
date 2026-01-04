@@ -103,4 +103,40 @@ function buildPlan(weak) {
     text += `  - Play 2–3 games focusing only on this skill.\n\n`;
   });
 
-  text += "Day 7: Replay review (10
+  text += "Day 7: Replay review (10 min) + freeplay (10 min)\n";
+  return text;
+}
+
+document.getElementById("generate").onclick = () => {
+  const scores = getScores().sort((a, b) => a.val - b.val);
+  const weak = scores.slice(0, 3);
+
+  document.getElementById("weaknesses").textContent =
+    weak.map(w => `${w.name} (${w.val}/5)`).join(" • ");
+
+  document.getElementById("plan").textContent = buildPlan(weak);
+  document.getElementById("results").style.display = "block";
+  document.getElementById("copied").textContent = "";
+};
+
+document.getElementById("reset").onclick = () => {
+  mechanics.forEach(name => {
+    document.getElementById(`m_${name.replace(/[^a-z0-9]/gi, "_")}`).value = 2;
+  });
+  document.getElementById("results").style.display = "none";
+  document.getElementById("copied").textContent = "";
+};
+
+document.getElementById("copy").onclick = async () => {
+  const text = document.getElementById("plan").textContent;
+  try {
+    await navigator.clipboard.writeText(text);
+    document.getElementById("copied").textContent = "Copied!";
+  } catch {
+    document.getElementById("copied").textContent = "Copy failed — select and copy.";
+  }
+};
+</script>
+</body>
+</html>
+
