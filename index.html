@@ -10,7 +10,7 @@
 <body>
   <div class="container">
     <h1>Rocket League Mechanics Tracker</h1>
-    <p class="sub">Rate each mechanic (0–5). Get your top weaknesses and a simple 7-day plan.</p>
+    <p class="sub">Rate each mechanic (0–5). Your ratings save automatically.</p>
 
     <div id="list"></div>
 
@@ -30,8 +30,10 @@
       <span id="copied" class="small"></span>
     </div>
   </div>
+
 <script>
 window.addEventListener("DOMContentLoaded", () => {
+
   const mechanics = [
     "Shooting accuracy",
     "Power shots",
@@ -68,12 +70,6 @@ window.addEventListener("DOMContentLoaded", () => {
   const planPre = document.getElementById("plan");
   const copiedSpan = document.getElementById("copied");
 
-  // Safety check (if IDs don’t exist, stop cleanly)
-  if (!listDiv || !resultsDiv || !weaknessesDiv || !planPre) {
-    console.error("Missing required elements. Check IDs in index.html.");
-    return;
-  }
-
   function makeRow(name) {
     const row = document.createElement("div");
     row.className = "row";
@@ -91,12 +87,20 @@ window.addEventListener("DOMContentLoaded", () => {
       select.appendChild(opt);
     }
 
-    select.value = 2;
+    // load saved value
+    const saved = localStorage.getItem(select.id);
+    select.value = saved !== null ? saved : 2;
+
+    // save on change
+    select.addEventListener("change", () => {
+      localStorage.setItem(select.id, select.value);
+    });
+
     row.append(label, select);
     return row;
   }
 
-  // Build the list
+  // build UI
   listDiv.innerHTML = "";
   mechanics.forEach(m => listDiv.appendChild(makeRow(m)));
 
@@ -104,7 +108,7 @@ window.addEventListener("DOMContentLoaded", () => {
     return mechanics.map(name => {
       const id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
       const el = document.getElementById(id);
-      return { name, val: Number(el ? el.value : 0) };
+      return { name, val: Number(el.value) };
     });
   }
 
@@ -112,7 +116,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let text = "";
     weak.forEach((w, i) => {
       text += `Day ${i + 1}: ${w.name}\n`;
-      text += `  - ${drillTips[w.name] || "10–15 minutes focused practice."}\n`;
+      text += `  - ${drillTips[w.name]}\n`;
       text += `  - Play 2–3 games focusing only on this skill.\n\n`;
     });
     text += "Day 7: Replay review (10 min) + freeplay (10 min)\n";
@@ -123,35 +127,35 @@ window.addEventListener("DOMContentLoaded", () => {
     const scores = getScores().sort((a, b) => a.val - b.val);
     const weak = scores.slice(0, 3);
 
-    weaknessesDiv.textContent = weak.map(w => `${w.name} (${w.val}/5)`).join(" • ");
-    planPre.textContent = buildPlan(weak);
+    weaknessesDiv.textContent =
+      weak.map(w => `${w.name} (${w.val}/5)`).join(" • ");
 
+    planPre.textContent = buildPlan(weak);
     resultsDiv.style.display = "block";
-    if (copiedSpan) copiedSpan.textContent = "";
+    copiedSpan.textContent = "";
   };
 
   document.getElementById("reset").onclick = () => {
     mechanics.forEach(name => {
       const id = `m_${name.replace(/[^a-z0-9]/gi, "_")}`;
       const el = document.getElementById(id);
-      if (el) el.value = 2;
+      el.value = 2;
+      localStorage.setItem(id, "2");
     });
     resultsDiv.style.display = "none";
-    if (copiedSpan) copiedSpan.textContent = "";
+    copiedSpan.textContent = "";
   };
 
   document.getElementById("copy").onclick = async () => {
-    const text = planPre.textContent || "";
     try {
-      await navigator.clipboard.writeText(text);
-      if (copiedSpan) copiedSpan.textContent = "Copied!";
+      await navigator.clipboard.writeText(planPre.textContent);
+      copiedSpan.textContent = "Copied!";
     } catch {
-      if (copiedSpan) copiedSpan.textContent = "Copy failed — select and copy.";
+      copiedSpan.textContent = "Copy failed — select and copy.";
     }
   };
+
 });
 </script>
 </body>
 </html>
-
-
